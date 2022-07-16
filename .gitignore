@@ -1,0 +1,6 @@
+__pycache__/
+bin/
+include/
+lib/
+main.spec
+.DS_Store
