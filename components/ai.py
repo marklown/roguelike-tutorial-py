@@ -1,6 +1,4 @@
 from __future__ import annotations
-from lib2to3.pytree import Base
-from optparse import Option
 from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 import tcod
@@ -53,6 +51,7 @@ class HostileEnemy(BaseAI):
   def __init__(self, entity: Actor):
     super().__init__(entity)
     self.path: List[Tuple[int, int]] = []
+    self.sleeping = True
 
   def perform(self) -> None:
     target = self.engine.player
@@ -61,10 +60,13 @@ class HostileEnemy(BaseAI):
     distance = max(abs(dx), abs(dy)) # Dhebyshev distance
 
     if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+      if distance <= 4:
+        self.sleeping = False
       if distance <= 1:
         if dx == 0 or dy == 0: # Only attack in cardinal directions
           return MeleeAction(self.entity, dx, dy).perform()
-      self.path = self.get_path_to(target.x, target.y)
+      if not self.sleeping:
+        self.path = self.get_path_to(target.x, target.y)
 
     if self.path:
       dest_x, dest_y = self.path.pop(0)

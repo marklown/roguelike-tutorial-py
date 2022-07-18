@@ -46,3 +46,11 @@ def render_names_at_mouse_location(
     x=mouse_x, y=mouse_y, game_map=engine.game_map
   )
   console.print(x=x, y=y, string=names_at_mouse_location)
+
+def render_dungeon_level(
+  console: Console,
+  dungeon_level: int,
+  location: Tuple[int, int]
+) -> None:
+  x, y = location
+  console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")

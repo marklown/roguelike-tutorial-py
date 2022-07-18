@@ -4,13 +4,8 @@ from xml.dom.minidom import Entity
 from numpy import isin
 import os
 import tcod
-from actions import (
-  Action, 
-  BumpAction, 
-  PickupAction,
-  DropItemAction,
-  WaitAction,
-)
+from actions import Action
+import actions
 import colors
 import exceptions
 
@@ -129,19 +124,24 @@ class MainGameEventHandler(EventHandler):
     action: Optional[Action] = None
 
     key = event.sym
+    modifier = event.mod
     player = self.engine.player
+
+    if key == tcod.event.K_PERIOD and modifier & (
+      tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT):
+      return actions.TakeStairsDownAction(player) 
 
     if key in MOVE_KEYS:
       dx, dy = MOVE_KEYS[key]
-      action = BumpAction(player, dx, dy)
+      action = actions.BumpAction(player, dx, dy)
     elif key in WAIT_KEYS:
-      action = WaitAction(player)
+      action = actions.WaitAction(player)
     elif key == tcod.event.K_ESCAPE:
       raise SystemExit()
     elif key == tcod.event.K_v:
       return HistoryViewer(self.engine)
     elif key == tcod.event.K_g:
-      action = PickupAction(player)
+      action = actions.PickupAction(player)
     elif key == tcod.event.K_i:
       return InventoryActivateHandler(self.engine)
     elif key == tcod.event.K_d:
@@ -228,7 +228,7 @@ class InventoryEventHandler(AskUserEventHandler):
       x = 40
     else:
       x = 0
-    y= 0
+    y= 1
 
     console.draw_frame(
       x=x,
@@ -244,7 +244,11 @@ class InventoryEventHandler(AskUserEventHandler):
     if number_of_items > 0:
       for i, item in enumerate(self.engine.player.inventory.items):
         item_key = chr(ord("a") + i)
-        console.print(x+1,y+i+1,f"({item_key}) {item.name}")
+        is_equipped = self.engine.player.equipment.item_is_equipped(item)
+        item_string = f"({item_key}) {item.name}"
+        if is_equipped:
+          item_string = f"{item_string} (E)"
+        console.print(x+1,y+i+1, item_string)
     else:
       console.print(x+1,y+1, "(Empty)")
 
@@ -271,7 +275,12 @@ class InventoryActivateHandler(InventoryEventHandler):
   TITLE = "Select an item to use"
 
   def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-    return item.consumable.get_action(self.engine.player)
+    if item.consumable:
+      return item.consumable.get_action(self.engine.player)
+    elif item.equippable:
+      return actions.EquipAction(self.engine.player, item)
+    else:
+      return None
 
 """
 Handles dropping an inventory item
@@ -280,7 +289,7 @@ class InventoryDropHandler(InventoryEventHandler):
   TITLE = "Select an item to drop"
 
   def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-    return DropItemAction(self.engine.player, item)
+    return actions.DropItemAction(self.engine.player, item)
 
 CONFIRM_KEYS = {
   tcod.event.K_RETURN,

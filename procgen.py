@@ -1,11 +1,11 @@
 from __future__ import annotations
 import random
 from typing import Iterator, List, Tuple, TYPE_CHECKING
-from numpy import tile
+from numpy import diff, tile
 import tcod
 from game_map import GameMap
 import tile_types
-import entity_factories
+import difficulty
 
 if TYPE_CHECKING:
   from engine import Engine
@@ -42,37 +42,30 @@ class RectangularRoom:
 def place_entities(
   room: RectangularRoom,
   dungeon: GameMap,
-  max_monsters: int,
-  max_items: int,
+  floor_number: int,
 ) -> None:
   # Place entities in the given room
-  number_of_monsters = random.randint(0, max_monsters)
-  number_of_items = random.randint(0, max_items)
+  number_of_monsters = random.randint(
+    0, difficulty.get_max_value_by_floor(difficulty.max_monsters_by_floor, floor_number)
+  )
+  number_of_items = random.randint(
+    0, difficulty.get_max_value_by_floor(difficulty.max_items_by_floor, floor_number)
+  )
 
-  # Place monsters
-  for i in range(number_of_monsters):
+  monsters: List[Entity] = difficulty.get_random_entities_by_floor(
+    difficulty.enemy_chances, number_of_monsters, floor_number
+  )
+
+  items: List[Entity] = difficulty.get_random_entities_by_floor(
+    difficulty.item_chances, number_of_items, floor_number
+  )
+
+  for entity in monsters + items:
     x = random.randint(room.x1 + 1, room.x2 - 1)
     y = random.randint(room.y1 + 1, room.y2 - 1)
     if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-      if random.random() < 0.8:
-        entity_factories.orc.spawn(dungeon, x, y)
-      else:
-        entity_factories.troll.spawn(dungeon, x, y)
+      entity.spawn(dungeon, x, y)
 
-  # Place items
-  for i in range(number_of_items):
-    x = random.randint(room.x1 + 1, room.x2 - 1)
-    y = random.randint(room.y1 + 1, room.y2 - 1)
-    if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-      item_chance = random.random()
-      if item_chance < 0.7:
-        entity_factories.health_potion.spawn(dungeon, x, y)
-      elif item_chance < 0.8:
-        entity_factories.fireball_scroll.spawn(dungeon, x, y)
-      elif item_chance < 0.9:
-        entity_factories.confusion_scroll.spawn(dungeon, x, y)
-      else:
-        entity_factories.lightning_scroll.spawn(dungeon, x, y)
 
 def tunnel_between(
   start: Tuple[int, int], end: Tuple[int, int]
@@ -99,8 +92,6 @@ def generate_dungeon(
   room_max_size: int,
   map_width: int,
   map_height: int,
-  max_monsters_per_room: int,
-  max_items_per_room: int,
   engine: Engine
 ) -> GameMap:
   # Generate a new dungeon game map
@@ -108,6 +99,7 @@ def generate_dungeon(
   dungeon = GameMap(engine, map_width, map_height, entities=[player])
 
   rooms: List[RectangularRoom] = []
+  center_of_last_room = (0, 0) # Keep track of center of last room so we can place stairs there
 
   for r in range(max_rooms):
     room_width = random.randint(room_min_size, room_max_size)
@@ -132,8 +124,13 @@ def generate_dungeon(
       # Dig a tunnel between this room and the previous one
       for x, y in tunnel_between(rooms[-1].center, new_room.center):
         dungeon.tiles[x, y] = tile_types.floor
+      center_of_last_room = new_room.center
 
-    place_entities(new_room, dungeon, max_monsters_per_room, max_items_per_room)
+    place_entities(new_room, dungeon, engine.game_world.current_floor)
+
+    # Place stairs leading down in the center of the last room
+    dungeon.tiles[center_of_last_room] = tile_types.stairs_down
+    dungeon.stairs_down_location = center_of_last_room
 
     rooms.append(new_room)
 

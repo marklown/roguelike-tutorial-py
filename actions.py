@@ -128,7 +128,8 @@ class ItemAction(Action):
 
   def perform(self) -> None:
     """Invoke the items ability"""
-    self.item.consumable.activate(self)
+    if self.item.consumable:
+      self.item.consumable.activate(self)
 
 """
 Action to pick up an Item from the map
@@ -160,4 +161,32 @@ Action to drop an item from inventory
 """
 class DropItemAction(ItemAction):
   def perform(self) -> None:
+    if self.entity.equipment.item_is_equipped(self.item):
+      # Unequip the item if it was equipped before dropping
+      self.entity.equipment.toggle_equip(self.item)
     self.entity.inventory.drop(self.item)
+
+"""
+Action to take stairs down
+"""
+class TakeStairsDownAction(Action):
+  def perform(self) -> None:
+    if (self.entity.x, self.entity.y) == self.engine.game_map.stairs_down_location:
+      self.engine.game_world.generate_floor()
+      self.engine.message_log.add_message(
+        "You descend the staircase.", colors.descend
+      )
+    else:
+      raise exceptions.Impossible("There are no stairs here.")
+
+
+"""
+Action to equip an equippable item
+"""
+class EquipAction(Action):
+  def __init__(self, entity: Actor, item: Item) -> None:
+    super().__init__(entity)
+    self.item = item
+
+  def perform(self) -> None:
+    self.entity.equipment.toggle_equip(self.item)

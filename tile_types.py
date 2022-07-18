@@ -1,6 +1,5 @@
-from ast import walk
 from typing import Tuple
-
+import random
 import numpy as np # type: ignore
 
 # Tile graphics structured type compatible with Console.tiles_rgb
@@ -41,14 +40,21 @@ fog = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)
 floor = new_tile(
   walkable=True,
   transparent=True,
-  dark=(ord("."), (100, 100, 100), (0, 0, 0)),
-  light=(ord("."), (200, 200, 200), (0, 0, 0)),
+  dark=(ord(" "), (22, 36, 51), (9, 12, 17)),
+  light=(ord(" "), (9, 12, 17), (22, 36, 51)),
 )
 
 # Wall tile
 wall = new_tile(
   walkable=False,
   transparent=False,
-  dark=(ord("#"), (100, 100, 100), (0, 0, 0)),
-  light=(ord("#"), (200, 200, 200), (0, 0, 0)),
+  dark=(ord("#"), (44, 64, 72), (22, 32, 36)),
+  light=(ord("#"), (22, 32, 36), (126, 149, 156)),
+)
+
+stairs_down = new_tile(
+  walkable=True,
+  transparent=True,
+  dark=(ord(">"), (44, 64, 72), (22, 32, 36)),
+  light=(ord(">"), (22, 32, 36), (126, 149, 156)),
 )

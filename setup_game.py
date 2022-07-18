@@ -10,7 +10,7 @@ import colors
 from engine import Engine
 import entity_factories
 import input_handlers
-from procgen import generate_dungeon
+from game_map import GameWorld
 
 background_image = tcod.image.load("menu_background.png")[:,:,:3]
 
@@ -24,23 +24,19 @@ def new_game() -> Engine:
   room_min_size = 6
   max_rooms = 30
 
-  max_monsters_per_room = 2
-  max_items_per_room = 2
-
   player = copy.deepcopy(entity_factories.player)
 
   engine = Engine(player=player)
 
-  engine.game_map = generate_dungeon(
+  engine.game_world = GameWorld(
+    engine=engine,
     max_rooms=max_rooms,
     room_min_size=room_min_size,
     room_max_size=room_max_size,
     map_width=map_width,
     map_height=map_height,
-    max_monsters_per_room=max_monsters_per_room,
-    max_items_per_room=max_items_per_room,
-    engine=engine,
   )
+  engine.game_world.generate_floor()
   engine.update_fov()
 
   engine.message_log.add_message(
@@ -65,27 +61,33 @@ class MainMenu(input_handlers.BaseEventHandler):
     console.draw_semigraphics(background_image, 0, 0)
 
     console.print(
-      console.width // 2,
-      console.height // 2 - 4,
-      "TOMBS OF THE ANCIENT KINGS",
-      fg=colors.menu_title,
+      #console.width // 2,
+      #console.height // 2 - 4,
+      16,
+      1,
+      "C A V E S  o f  K A T T E G A T",
+      fg=colors.menu_text,
+      bg=colors.black,
+      bg_blend=tcod.BKGND_ALPHA(64),
       alignment=tcod.CENTER,
     )
-    console.print(
+    """console.print(
       console.width // 2,
       console.height - 2,
       "By (Your name here)",
-      fg=colors.menu_title,
+      fg=colors.menu_text,
       alignment=tcod.CENTER,
-    )
+    )"""
 
     menu_width = 24
     for i, text in enumerate(
       ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
     ):
       console.print(
-        console.width // 2,
-        console.height // 2 - 2 + i,
+        #console.width // 2,
+        #console.height // 2 - 2 + i,
+        16,
+        3 + i,
         text.ljust(menu_width),
         fg=colors.menu_text,
         bg=colors.black,
