@@ -65,7 +65,9 @@ class Equipment(BaseComponent):
       self.unequip_message(current_item.name)
 
   def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
-    if (equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.MELEE_WEAPON):
+    if (equippable_item.equippable and \
+        (equippable_item.equippable.equipment_type == EquipmentType.MELEE_WEAPON or \
+         equippable_item.equippable.equipment_type == EquipmentType.RANGED_WEAPON)):
       slot = "weapon"
     else:
       slot = "armor"

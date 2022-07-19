@@ -18,7 +18,8 @@ max_items_by_floor = [
 ]
 
 max_monsters_by_floor = [
-  (1, 2),
+  (1, 1),
+  (2, 2),
   (4, 3),
   (6, 5),
 ]
@@ -28,17 +29,39 @@ Control the chances of items and enemies appearing on each floor
 """
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
-  0: [(entity_factories.health_potion, 10)],
-  2: [(entity_factories.confusion_scroll, 10), (entity_factories.dagger, 5), (entity_factories.leather_armor, 10)],
-  4: [(entity_factories.lightning_scroll, 20), (entity_factories.short_sword, 5)],
-  6: [(entity_factories.fireball_scroll, 20), (entity_factories.chain_mail, 10)],
+  0: [
+    (entity_factories.health_potion, 5),
+    (entity_factories.green_apple, 10),
+  ],
+  2: [
+    (entity_factories.confusion_scroll, 10), 
+    (entity_factories.dagger, 5), 
+    (entity_factories.leather_armor, 10),
+  ],
+  4: [
+    (entity_factories.lightning_scroll, 20), 
+    (entity_factories.short_sword, 5),
+    (entity_factories.red_apple, 10),
+  ],
+  6: [
+    (entity_factories.fireball_scroll, 20), 
+    (entity_factories.chain_mail, 10),
+  ],
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factories.orc, 80)],
-    3: [(entity_factories.troll, 15)],
-    5: [(entity_factories.troll, 30)],
-    7: [(entity_factories.troll, 60)],
+    0: [
+      (entity_factories.orc, 80),
+    ],
+    3: [
+      (entity_factories.troll, 15),
+    ],
+    5: [
+      (entity_factories.troll, 30),
+    ],
+    7: [
+      (entity_factories.troll, 60),
+    ],
 }
 
 def get_max_value_by_floor(

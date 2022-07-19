@@ -7,6 +7,7 @@ import tcod
 from actions import Action
 import actions
 import colors
+from equipment_types import EquipmentType
 import exceptions
 
 if TYPE_CHECKING:
@@ -146,6 +147,16 @@ class MainGameEventHandler(EventHandler):
       return InventoryActivateHandler(self.engine)
     elif key == tcod.event.K_d:
       return InventoryDropHandler(self.engine)
+    elif key == tcod.event.K_f:
+      """TODO: refactor to function or class"""
+      player = self.engine.player
+      weapon = player.equipment.weapon
+      if (weapon and 
+          weapon.equippable and 
+          weapon.equippable.equipment_type == EquipmentType.RANGED_WEAPON):
+        return weapon.equippable.get_action(firing_entity=player)
+      else:
+        self.engine.message_log.add_message("You have no ranged weapon equipped")
     elif key == tcod.event.K_SLASH:
       return LookHandler(self.engine)
     elif key == tcod.event.K_BACKSLASH:
@@ -248,9 +259,9 @@ class InventoryEventHandler(AskUserEventHandler):
         item_string = f"({item_key}) {item.name}"
         if is_equipped:
           item_string = f"{item_string} (E)"
-        console.print(x+1,y+i+1, item_string)
+        console.print(x+1,y+i+1, item_string, fg=colors.text_color)
     else:
-      console.print(x+1,y+1, "(Empty)")
+      console.print(x+1,y+1, "(Empty)", fg=colors.text_color)
 
   def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
     player = self.engine.player
@@ -364,6 +375,10 @@ class SingleRangedAttackHandler(SelectIndexHandler):
   def __init__(self, engine: Engine, callback: Callable[[Tuple[int, int]], Optional[Action]]):
     super().__init__(engine)
     self.callback = callback
+    # Set cursor to nearest enemy
+    closest_enemy = self.engine.game_map.get_closest_actor_in_range(10)
+    if closest_enemy:
+      self.engine.mouse_location = closest_enemy.x, closest_enemy.y 
 
   def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
     return self.callback((x, y))
@@ -398,6 +413,10 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
   def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
     return self.callback((x, y))
+
+class FireRangedWeaponAttackHandler(BaseEventHandler):
+  def __init__(self) -> None:
+    super().__init__()
 
 class PopupMessage(BaseEventHandler):
   """Display a popup text window."""

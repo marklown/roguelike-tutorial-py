@@ -83,6 +83,15 @@ fireball_scroll = Item(
   consumable=consumable.FireballDamageConsumable(damage=12, radius=3)
 )
 
+bow = Item(
+  char="}",
+  color=(0, 191, 255),
+  name="Long bow",
+  equippable=equippable.RangedWeapon(
+    range=1,
+    power=3,
+  )
+)
 
 dagger = Item(
   char="/",

@@ -65,7 +65,8 @@ class HostileEnemy(BaseAI):
       if distance <= 1:
         if dx == 0 or dy == 0: # Only attack in cardinal directions
           return MeleeAction(self.entity, dx, dy).perform()
-      if not self.sleeping:
+      if not self.sleeping or self.entity.fighter.did_take_damage:
+        # Wake up if not sleeping, or if took damage
         self.path = self.get_path_to(target.x, target.y)
 
     if self.path:

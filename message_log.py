@@ -31,7 +31,7 @@ class MessageLog:
   def add_message(
     self,
     text: str,
-    fg: Tuple[int, int, int] = colors.white,
+    fg: Tuple[int, int, int] = colors.text_color,
     *,
     stack: bool = True,
   ) -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import colors
+from equipment_types import EquipmentType
 import exceptions
 
 if TYPE_CHECKING:
@@ -130,6 +131,8 @@ class ItemAction(Action):
     """Invoke the items ability"""
     if self.item.consumable:
       self.item.consumable.activate(self)
+    if self.item.equippable and self.item.equippable.equipment_type == EquipmentType.RANGED_WEAPON:
+      self.item.equippable.activate(self)
 
 """
 Action to pick up an Item from the map

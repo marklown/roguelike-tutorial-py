@@ -1,4 +1,5 @@
 from __future__ import annotations
+from optparse import Option
 from typing import Iterable, Iterator, List, Optional, TYPE_CHECKING
 import numpy as np # type: ignore
 from tcod.console import Console
@@ -52,6 +53,19 @@ class GameMap:
         return actor
     return None
 
+  def get_closest_actor_in_range(self, range: int) -> Optional[Actor]:
+    """Get the closest actor to the player"""
+    closest: Actor = None
+    closest_distance = range + 1.0
+    # Find the closest actor to target
+    for actor in self.actors:
+      if actor is not self.engine.player and self.visible[actor.x, actor.y]:
+        distance = self.engine.player.distance(actor.x, actor.y)
+        if distance < closest_distance:
+          closest = actor
+          closest_distance = distance
+    return closest
+
   def in_bounds(self, x: int, y: int) -> bool:
     return 0 <= x < self.width and 0 <= y < self.height
 
@@ -87,6 +101,7 @@ class GameMap:
       entity_factories.short_sword,
       entity_factories.green_apple,
       entity_factories.red_apple,
+      entity_factories.bow,
     ]
 
   def debug_spawn_entity(self, entity: Entity, x: int, y: int) -> None:

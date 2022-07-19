@@ -21,6 +21,7 @@ class Fighter(BaseComponent):
     self._hp = hp
     self.base_defense = base_defense
     self.base_power = base_power
+    self.did_take_damage = False
 
   @property
   def hp(self) -> int:
@@ -83,3 +84,4 @@ class Fighter(BaseComponent):
 
   def take_damage(self, amount: int) -> None:
     self.hp -= amount
+    self.did_take_damage = True
